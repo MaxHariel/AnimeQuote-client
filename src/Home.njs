@@ -1,6 +1,7 @@
 import Nullstack from "nullstack";
 import "./Home.scss";
 import Button from "./components/Button.njs";
+import Card from "./components/Card.njs";
 
 class Home extends Nullstack {
   searchInput = "";
@@ -8,7 +9,7 @@ class Home extends Nullstack {
   nextPage = "";
   prepare({ project, page }) {
     page.title = `Home`;
-    page.description = `${project.name} foi feito com Nullstack`;
+    page.description = `${project.name} foi feito com Nullstack ヽ(^◇^*)/`;
   }
 
   async initiate() {
@@ -32,22 +33,24 @@ class Home extends Nullstack {
   }
 
   async getQuotes({ settings, data }) {
-    const response = await fetch(
-      `${settings.apiHost}/quote?search=${this.searchInput}&page=${
-        data.page || this.nextPage
-      }`,
-      {
-        method: "GET",
+    try {
+      const response = await fetch(
+        `${settings.apiHost}/quote?search=${this.searchInput}&page=${
+          data.firstPage || this.nextPage
+        }`,
+        {
+          method: "GET",
+        }
+      );
+      const query = await response.json();
+      if (!data.keepQuotes) {
+        this.quotes = [];
       }
-    );
-    const query = await response.json();
-    console.log("Data ->", data);
-    if (!data.keepQuotes) {
-      this.quotes = [];
+      this.quotes.push(...query.docs);
+      this.nextPage = query.nextPage;
+    } catch (error) {
+      console.log(error);
     }
-    this.quotes.push(...query.docs);
-    this.nextPage = query.nextPage;
-    console.log(this.nextPage);
   }
 
   render() {
@@ -59,7 +62,7 @@ class Home extends Nullstack {
         <div class="self-center text-1xl font-medium pt-3">
           Busque por frases icônicas de personagens
         </div>
-        <div class="self-center w-6/12 relative flex mb-3 mt-3">
+        <div class="self-center w-6/12 relative flex my-3">
           <input
             bind={this.searchInput}
             value={this.searchInput}
@@ -69,7 +72,7 @@ class Home extends Nullstack {
           />
           <span
             onclick={this.getQuotes}
-            data-page={1}
+            data-first-page={1}
             class="text-center cursor-pointer text-white bg-purple-500 z-10 h-full leading-snug absolute rounded w-12 right-0 pt-3 hover:bg-purple-600"
           >
             <i class="fas fa-search fa-lg"></i>
@@ -82,11 +85,7 @@ class Home extends Nullstack {
         />
         <div class="self-center w-6/12  mt-5">
           {this.quotes.map((quote) => (
-            <div class="bg-white p-4 rounded mt-4">
-              <p class="font-semibold">{quote.character}</p>
-              <p class="italic mt-1 mb-1">"{quote.quote}"</p>
-              <p>{quote.anime}</p>
-            </div>
+            <Card quote={quote} />
           ))}
         </div>
         {this.nextPage && (
