@@ -55,7 +55,7 @@ class Home extends Nullstack {
 
   render() {
     return (
-      <div class="container flex flex-col home">
+      <div class="container flex flex-col home" style="min-width: 100%;">
         <div class="self-center text-4xl font-semibold pt-3">
           Citações de Anime
         </div>
